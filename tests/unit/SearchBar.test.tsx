@@ -1,21 +1,39 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { vi } from 'vitest';
 import SearchBar from '../../src/components/SearchBar';
 
 describe('SearchBar', () => {
-  it('não dispara busca com input vazio', async () => {
+  it('submits a trimmed city name', async () => {
+    const user = userEvent.setup();
     const onSearch = vi.fn();
+
     render(<SearchBar onSearch={onSearch} />);
-    await userEvent.click(screen.getByRole('button', { name: /buscar/i }));
-    expect(onSearch).not.toHaveBeenCalled();
+
+    await user.type(screen.getByRole('searchbox', { name: 'Cidade' }), '  Lisboa  ');
+    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(onSearch).toHaveBeenCalledWith('Lisboa');
   });
 
-  it('dispara busca com o termo digitado', async () => {
+  it('does not submit an empty city', async () => {
+    const user = userEvent.setup();
     const onSearch = vi.fn();
+
     render(<SearchBar onSearch={onSearch} />);
-    await userEvent.type(screen.getByLabelText(/buscar cidade/i), 'Lisboa');
-    await userEvent.click(screen.getByRole('button', { name: /buscar/i }));
-    expect(onSearch).toHaveBeenCalledWith('Lisboa');
+
+    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(onSearch).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Informe uma cidade para buscar.');
+  });
+
+  it('disables the search controls when disabled', () => {
+    const onSearch = vi.fn();
+
+    render(<SearchBar disabled onSearch={onSearch} />);
+
+    expect(screen.getByRole('searchbox', { name: 'Cidade' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Buscar' })).toBeDisabled();
   });
 });

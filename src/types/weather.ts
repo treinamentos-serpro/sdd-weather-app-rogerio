@@ -1,47 +1,37 @@
-/**
- * Contratos de domínio compartilhados do Weather App.
- *
- * Decisão de arquitetura: as temperaturas são sempre armazenadas em Celsius
- * internamente e convertidas apenas na camada de apresentação. Assim, a troca
- * de unidade (C/F) nunca dispara um novo request.
- */
-
 export type Unit = 'celsius' | 'fahrenheit';
 
-/** Resultado da API de geocoding (uma cidade). */
+export type WeatherStatus = 'idle' | 'loading' | 'success' | 'empty' | 'error';
+
 export interface City {
-  id: number;
-  name: string;
-  country: string;
-  /** Estado/região, quando disponível (ajuda a desambiguar homônimos). */
-  admin1?: string;
-  latitude: number;
-  longitude: number;
+  name: string; // Nome da cidade.
+  region?: string; // Estado ou região administrativa.
+  country: string; // Nome do país.
+  latitude: number; // Latitude em graus decimais.
+  longitude: number; // Longitude em graus decimais.
 }
 
-/** Condições atuais. Temperatura sempre em °C. */
 export interface CurrentWeather {
-  temperature: number;
-  weatherCode: number;
-  humidity: number;
-  windSpeed: number;
-  pressure: number;
-  precipitation: number;
-  time: string;
+  observedAt: string; // Horário da observação no fuso local, em ISO 8601.
+  temperatureCelsius: number; // Temperatura atual em Celsius.
+  apparentTemperatureCelsius: number; // Sensação térmica em Celsius.
+  relativeHumidity: number; // Umidade relativa entre 0 e 100%.
+  windSpeedKmh: number; // Velocidade do vento em km/h.
+  precipitationMm: number; // Precipitação em milímetros.
+  pressureHpa: number; // Pressão atmosférica em hPa.
+  weatherCode: number; // Código meteorológico WMO.
 }
 
-/** Um dia da previsão. Temperaturas sempre em °C. */
 export interface ForecastDay {
-  date: string;
-  min: number;
-  max: number;
-  weatherCode: number;
-  precipitationProbability: number;
+  date: string; // Data local no formato ISO 8601: YYYY-MM-DD.
+  minimumCelsius: number; // Temperatura mínima em Celsius.
+  maximumCelsius: number; // Temperatura máxima em Celsius.
+  precipitationProbability: number; // Probabilidade máxima de precipitação em percentual.
+  weatherCode: number; // Código meteorológico WMO do dia.
 }
 
-/** Agregado entregue à UI: cidade + clima atual + 5 dias de previsão. */
 export interface WeatherData {
-  city: City;
-  current: CurrentWeather;
-  forecast: ForecastDay[];
+  city: City; // Cidade selecionada.
+  timezone: string; // Fuso horário retornado pela Open-Meteo.
+  current: CurrentWeather; // Condições meteorológicas atuais.
+  forecast: ForecastDay[]; // Previsão diária, com cinco itens no MVP.
 }
